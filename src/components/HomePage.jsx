@@ -14,7 +14,7 @@ const HomePage = () => {
         const url = "https://dapi.kakao.com/v3/search/book?target=title"
         const config = {
             headers: {
-                Authorization: "KakaoAK 946e2e15a15fff0476418e755bb41a6f"
+                Authorization: "KakaoAK " + process.env.REACT_APP_KAKAO_REST_KEY
             },
             params: {
                 query: query,
