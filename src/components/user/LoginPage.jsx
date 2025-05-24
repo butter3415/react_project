@@ -1,9 +1,16 @@
 import React, { useState } from 'react'
 import { Button, Card, Col, Form, Row } from 'react-bootstrap'
+import { app } from '../../firebase'
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
+import { useNavigate } from 'react-router-dom'
 
 const LoginPage = () => {
+    const auth = getAuth(app); // firebase 인증정보 사용
+    const [loading, setLoading] = useState(false);
+    
+    const navi = useNavigate();
+    
     const basename = process.env.PUBLIC_URL;
-
     const [form, setForm] = useState({
         email: 'dark@inha.com',
         pass: '12341234'
@@ -13,7 +20,7 @@ const LoginPage = () => {
 
     const onChange = (e) => {
         setForm({
-            ...Form,
+            ...form,
             [e.target.name]: e.target.value
         });
     };
@@ -22,14 +29,27 @@ const LoginPage = () => {
         e.preventDefault();
         
         // 유효성 체크
-        
         if(email === '' || pass === ''){
             alert('이메일 or 패스워드를 입력하세요!')
         } else {
             // 로그인 체크
+            setLoading(true);
+            signInWithEmailAndPassword(auth, email, pass)
+            .then(success=>{
+                alert('로그인 성공!');
+                sessionStorage.setItem('email', email)
+                sessionStorage.setItem('uid', success.user.uid)
+                setLoading(false);
+                navi('/');
+            })
+            .catch(error=>{
+                alert('로그인 에러! : '+error.message);
+                setLoading(false);
+            })
         }
     }
 
+    if(loading) return <h1 className = 'my-4 text-center'> 로딩중! </h1>
 
     return (
         <div>
