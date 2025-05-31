@@ -4,13 +4,17 @@ import { Button, Card, CardBody, Col, Form, InputGroup, Row } from 'react-bootst
 import BookPage from './BookPage';
 import { BsCart2 } from "react-icons/bs";
 import { app } from '../firebase'
-import { getDatabase, ref, set, get } from 'firebase/database'
+import { getDatabase, ref, set, get, onValue, remove } from 'firebase/database'
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
+import { GoHeartFill } from "react-icons/go";
+import { GoHeart } from "react-icons/go";
 
 const HomePage = () => {
 
     const db = getDatabase(app);
+
+    const [heart, setHeart] = useState([]);
     const [loading, setLoading] = useState(false);
     const uid = sessionStorage.getItem('uid');
     const navi = useNavigate();
@@ -19,6 +23,7 @@ const HomePage = () => {
     const [query, setQuery] = useState('리액트')
     const [page, setPage] = useState(1);
     const [last, setLast] = useState(1);
+
 
 
     const callAPI = async () => {
@@ -74,6 +79,41 @@ const HomePage = () => {
         }
     }
 
+    // 빈 하트를 클릭한 경우
+    const onClickRegHeart = (book) => {
+        if (uid) {
+            // 좋아요 등록
+            set(ref(db, `heart/${uid}/${book.isbn}`), book);
+            alert('좋아요 추가 완료!');
+        } else {
+            navi('/login')
+        }
+    }
+
+    // 채운 하트를 클릭한 경우
+    const onClickHeart = (book) => {
+        remove(ref(db, `heart/${uid}/${book.isbn}`))
+        alert('좋아요 취소 완료!');
+    }
+
+    // 현재 이메일의 좋아요 목록함수
+    const checkHeart = () => {
+        setLoading(true);
+        onValue(ref(db, `heart/${uid}`), snapshot => {
+            const rows = [];
+            snapshot.forEach(row => {
+                rows.push(row.val().isbn);
+            });
+            console.log(rows);
+            setHeart(rows);
+            setLoading(false);
+        });
+    }
+
+    useEffect(() => {
+        checkHeart();
+    }, [])
+
     if (loading) return <h1 className='text-center my-4'>로딩중!</h1>
 
     return (
@@ -97,10 +137,19 @@ const HomePage = () => {
 
             <Row>
                 {documents.map(doc =>
-                    <Col lg={2} md={3} xs={6} className='mb-2'>
+                    <Col lg={2} md={3} xs={6} className='mb-2' key={doc.isbn}>
                         <Card>
                             <Card.Body>
                                 <BookPage book={doc} />
+                                <div className='heart text-end'>
+                                    {heart.includes(doc.isbn) ?
+                                        <GoHeartFill onClick={()=> onClickHeart(doc)}/>
+                                        :
+                                        <GoHeart onClick={() => onClickRegHeart(doc)}/>
+                                    }
+
+
+                                </div>
                             </Card.Body>
                             <Card.Footer>
                                 <div className='text-truncate'>{doc.title}</div>
