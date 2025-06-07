@@ -10,12 +10,12 @@ const ReplyList = ({ pid }) => {
     const getList = () => {
         const q = query(collection(db, 'reply'),
             where('pid', '==', pid),
-            orderBy('date', 'desc'))
+            orderBy('date', 'desc'));
 
         onSnapshot(q, snapshot => {
             let rows = [];
             snapshot.forEach(row => {
-                rows.push({ id: row.id, ...row.data })
+                rows.push({ id: row.id, ...row.data() })
             });
 
             console.log(rows);
