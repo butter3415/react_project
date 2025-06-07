@@ -9,3 +9,10 @@
     cursor : pointer;
     font-size : 25px;
 }
+
+.textarea{
+    width : 100%;
+    outline: none;
+    border : none;
+    border-bottom : 1px solid black;
+}
